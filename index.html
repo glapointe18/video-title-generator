@@ -46,11 +46,6 @@
 
   <label>Text color :</label>
   <div id="colorPalette">
-    <div class="colorSwatch selected" style="background:#ffffff;" data-color="#ffffff"></div>
-    <div class="colorSwatch" style="background:#ffd700;" data-color="#ffd700"></div>
-    <div class="colorSwatch" style="background:#00ff00;" data-color="#00ff00"></div>
-    <div class="colorSwatch" style="background:#00bfff;" data-color="#00bfff"></div>
-    <div class="colorSwatch" style="background:#ff69b4;" data-color="#ff69b4"></div>
     <input type="color" id="customColor" value="#ffffff">
   </div>
 
@@ -92,11 +87,24 @@ const form = document.getElementById('titleForm');
 const previewsContainer = document.getElementById('previewsContainer');
 const addTitleBtn = document.getElementById('addTitleBtn');
 const titlesContainer = document.getElementById('titlesContainer');
-const colorSwatches = document.querySelectorAll('.colorSwatch');
+const colorPaletteDiv = document.getElementById('colorPalette');
 const customColorInput = document.getElementById('customColor');
+
+const paletteColors = ['#fff2cc', '#ffb1b7', '#7c67ff', '#ffffff', '#ff7456'];
 let selectedColor = '#ffffff';
 
-// Handle swatch selection
+// Generate swatches
+paletteColors.forEach((color, index) => {
+  const swatch = document.createElement('div');
+  swatch.className = 'colorSwatch';
+  swatch.style.background = color;
+  swatch.dataset.color = color;
+  if(color === '#ffffff') swatch.classList.add('selected'); // default white
+  colorPaletteDiv.insertBefore(swatch, customColorInput);
+});
+
+// Handle swatch click
+const colorSwatches = document.querySelectorAll('.colorSwatch');
 colorSwatches.forEach(swatch => {
   swatch.addEventListener('click', () => {
     colorSwatches.forEach(s => s.classList.remove('selected'));
@@ -105,7 +113,7 @@ colorSwatches.forEach(swatch => {
   });
 });
 
-// Custom color picker
+// Custom color
 customColorInput.addEventListener('change', () => {
   colorSwatches.forEach(s => s.classList.remove('selected'));
   selectedColor = customColorInput.value;
