@@ -20,19 +20,21 @@ paletteColors.forEach((color) => {
 });
 
 // Handle swatch click
-function selectColor(colorDiv, color) {
-  document.querySelectorAll('.colorSwatch, #customColor').forEach(el => el.classList.remove('selected'));
-  colorDiv.classList.add('selected');
-  selectedColor = color;
-}
-document.querySelectorAll('.colorSwatch').forEach(swatch => {
-  swatch.addEventListener('click', () => selectColor(swatch, swatch.dataset.color));
+const colorSwatches = document.querySelectorAll('.colorSwatch');
+colorSwatches.forEach(swatch => {
+  swatch.addEventListener('click', () => {
+    colorSwatches.forEach(s => s.classList.remove('selected'));
+    swatch.classList.add('selected');
+    selectedColor = swatch.dataset.color;
+  });
 });
 
 // Custom color
-customColorInput.addEventListener('input', () => selectColor(customColorInput, customColorInput.value));
+customColorInput.addEventListener('change', () => {
+  colorSwatches.forEach(s => s.classList.remove('selected'));
+  selectedColor = customColorInput.value;
+});
 
-// Add new title block
 addTitleBtn.addEventListener('click', () => {
   const newBlock = document.createElement('div');
   newBlock.className = 'titleBlock';
@@ -42,70 +44,69 @@ addTitleBtn.addEventListener('click', () => {
     <label>Compositeur :</label><input type="text" class="composer" placeholder="Ex: Beethoven">
   `;
   titlesContainer.appendChild(newBlock);
-  attachLivePreview(newBlock);
 });
 
-// Live preview for all blocks
-function attachLivePreview(block) {
-  const videoTitleInput = block.querySelector('.videoTitle');
-  const operaInput = block.querySelector('.operaSource');
-  const composerInput = block.querySelector('.composer');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  previewsContainer.innerHTML = ''; // Clear previous previews
 
-  const previewDiv = document.createElement('div');
-  previewDiv.className = 'preview';
-  previewDiv.style.color = selectedColor;
-  previewsContainer.appendChild(previewDiv);
+  const interpreter = document.getElementById('interpreter').value;
+  const instrumentTessiture = document.getElementById('instrumentTessiture').value;
+  const accompanist = document.getElementById('accompanist').value;
+  const instrumentAccomp = document.getElementById('instrumentAccomp').value;
+  const fontChoice = document.getElementById('fontChoice').value;
+  const fontStyle = document.getElementById('fontStyle').value;
 
-  function updatePreview() {
-    const interpreter = document.getElementById('interpreter').value;
-    const instrumentTessiture = document.getElementById('instrumentTessiture').value;
-    const accompanist = document.getElementById('accompanist').value;
-    const instrumentAccomp = document.getElementById('instrumentAccomp').value;
-    const fontChoice = document.getElementById('fontChoice').value;
-    const fontStyle = document.getElementById('fontStyle').value;
+  const titleBlocks = titlesContainer.querySelectorAll('.titleBlock');
 
+  titleBlocks.forEach((block,index)=>{
+    const videoTitle = block.querySelector('.videoTitle').value;
+    const operaSource = block.querySelector('.operaSource').value;
+    const composer = block.querySelector('.composer').value;
+
+    if(!videoTitle) return;
+
+    // Container for preview + button
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.style.marginBottom = '30px';
+
+    // Preview box
+    const previewDiv = document.createElement('div');
+    previewDiv.className = 'preview';
     previewDiv.style.color = selectedColor;
     previewDiv.style.fontFamily = fontChoice;
-    previewDiv.style.fontStyle = fontStyle.includes('italic') ? 'italic':'normal';
-    previewDiv.style.fontWeight = fontStyle.includes('bold') ? 'bold':'normal';
+    previewDiv.style.fontStyle = fontStyle==='italic' ? 'italic':'normal';
+    previewDiv.style.fontWeight = fontStyle==='bold' ? 'bold':'normal';
 
     let secondLine = '';
-    if(operaInput.value) secondLine += `<div style="font-size:42px; font-weight:normal;">${operaInput.value}</div>`;
-    if(composerInput.value) secondLine += `<div style="font-size:42px; font-weight:normal;">${composerInput.value}</div>`;
+    if(operaSource) secondLine += `<div style="font-size:42px; font-weight:normal;">${operaSource}</div>`;
+    if(composer) secondLine += `<div style="font-size:42px; font-weight:normal;">${composer}</div>`;
 
     previewDiv.innerHTML = `
-      <div style="font-size:42px; font-weight:bold; font-style:italic;">${videoTitleInput.value}</div>
+      <div style="font-size:42px; font-weight:bold; font-style:italic;">${videoTitle}</div>
       ${secondLine}<br><br>
       <div style="font-size:31px;">${[interpreter, instrumentTessiture].filter(Boolean).join(', ')}</div>
       <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
-      <button class="download-btn">Télécharger cette page</button>
     `;
 
-    const downloadBtn = previewDiv.querySelector('button');
+    // Download button OUTSIDE the preview
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = 'Télécharger cette page';
+    downloadBtn.className = 'download-btn';
+    downloadBtn.style.marginTop = '10px';
+
     downloadBtn.addEventListener('click', ()=>{
       html2canvas(previewDiv, { scale: 5 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `page-titre-${Array.from(previewsContainer.children).indexOf(previewDiv)+1}.png`;
+        link.download = `page-titre-${index+1}.png`;
         link.href = canvas.toDataURL();
         link.click();
       });
     });
-  }
 
-  // Update on input changes
-  [videoTitleInput, operaInput, composerInput].forEach(input => input.addEventListener('input', updatePreview));
-  ['interpreter','instrumentTessiture','accompanist','instrumentAccomp','fontChoice','fontStyle'].forEach(id => 
-    document.getElementById(id).addEventListener('input', updatePreview)
-  );
-  customColorInput.addEventListener('input', updatePreview);
-  document.querySelectorAll('.colorSwatch').forEach(swatch => swatch.addEventListener('click', updatePreview));
-
-  updatePreview(); // initial
-}
-
-// Attach live preview to initial block
-document.querySelectorAll('.titleBlock').forEach(block => attachLivePreview(block));
-
-// Form submit to regenerate previews (optional, can keep it if needed)
-form.addEventListener('submit', (e) => e.preventDefault());
+    wrapperDiv.appendChild(previewDiv);
+    wrapperDiv.appendChild(downloadBtn);
+    previewsContainer.appendChild(wrapperDiv);
+  });
+});
 </script>
