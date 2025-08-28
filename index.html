@@ -16,10 +16,10 @@
     width: 800px; height: 450px; border: 2px solid #333; 
     display: flex; flex-direction: column; justify-content: center; 
     align-items: center; text-align: center; 
-    background-color: black; position: relative; margin-bottom: 20px; padding: 10px;
+    background-color: black; position: relative; margin-bottom: 10px; padding: 10px;
     color: white;
   }
-  .download-btn { padding: 10px 15px; cursor: pointer; max-width: 200px; margin-top: 10px; }
+  .download-btn { padding: 10px 15px; cursor: pointer; max-width: 200px; margin-bottom: 20px; }
   #colorPalette { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
   .colorSwatch { width:40px; height:40px; cursor:pointer; border:2px solid #333; border-radius:5px; }
   .colorSwatch.selected { border:3px solid #fff; }
@@ -94,7 +94,7 @@ const paletteColors = ['#fff2cc', '#ffb1b7', '#7c67ff', '#ffffff', '#ff7456'];
 let selectedColor = '#ffffff';
 
 // Generate swatches
-paletteColors.forEach((color, index) => {
+paletteColors.forEach((color) => {
   const swatch = document.createElement('div');
   swatch.className = 'colorSwatch';
   swatch.style.background = color;
@@ -166,11 +166,16 @@ form.addEventListener('submit', (e) => {
       ${secondLine}<br><br>
       <div style="font-size:31px;">${[interpreter, instrumentTessiture].filter(Boolean).join(', ')}</div>
       <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
-      <button class="download-btn">Télécharger cette page</button>
     `;
+
+    // Ajouter le preview et le bouton séparément
     previewsContainer.appendChild(previewDiv);
 
-    const downloadBtn = previewDiv.querySelector('button');
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'download-btn';
+    downloadBtn.textContent = 'Télécharger cette page';
+    previewsContainer.appendChild(downloadBtn);
+
     downloadBtn.addEventListener('click', ()=>{
       html2canvas(previewDiv, { scale: 5 }).then(canvas => {
         const link = document.createElement('a');
