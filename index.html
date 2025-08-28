@@ -20,6 +20,10 @@
     color: white;
   }
   .download-btn { padding: 10px 15px; cursor: pointer; max-width: 200px; margin-top: 10px; }
+  #colorPalette { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
+  .colorSwatch { width:40px; height:40px; cursor:pointer; border:2px solid #333; border-radius:5px; }
+  .colorSwatch.selected { border:3px solid #fff; }
+  #customColor { width:40px; height:40px; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -41,15 +45,14 @@
   <input type="text" id="instrumentAccomp" placeholder="Ex: Piano">
 
   <label>Text color :</label>
-  <select id="textColor">
-    <option value="#ffffff">Blanc</option>
-    <option value="#ffd700">Or</option>
-    <option value="#00ff00">Vert</option>
-    <option value="#00bfff">Bleu ciel</option>
-    <option value="#ff69b4">Rose</option>
-    <option value="custom">Personnalisé</option>
-  </select>
-  <input type="color" id="customColor" value="#ffffff" style="display:none;">
+  <div id="colorPalette">
+    <div class="colorSwatch selected" style="background:#ffffff;" data-color="#ffffff"></div>
+    <div class="colorSwatch" style="background:#ffd700;" data-color="#ffd700"></div>
+    <div class="colorSwatch" style="background:#00ff00;" data-color="#00ff00"></div>
+    <div class="colorSwatch" style="background:#00bfff;" data-color="#00bfff"></div>
+    <div class="colorSwatch" style="background:#ff69b4;" data-color="#ff69b4"></div>
+    <input type="color" id="customColor" value="#ffffff">
+  </div>
 
   <label>Choix de police :</label>
   <select id="fontChoice">
@@ -89,11 +92,23 @@ const form = document.getElementById('titleForm');
 const previewsContainer = document.getElementById('previewsContainer');
 const addTitleBtn = document.getElementById('addTitleBtn');
 const titlesContainer = document.getElementById('titlesContainer');
-const textColorSelect = document.getElementById('textColor');
+const colorSwatches = document.querySelectorAll('.colorSwatch');
 const customColorInput = document.getElementById('customColor');
+let selectedColor = '#ffffff';
 
-textColorSelect.addEventListener('change', () => {
-  customColorInput.style.display = textColorSelect.value==='custom' ? 'block':'none';
+// Handle swatch selection
+colorSwatches.forEach(swatch => {
+  swatch.addEventListener('click', () => {
+    colorSwatches.forEach(s => s.classList.remove('selected'));
+    swatch.classList.add('selected');
+    selectedColor = swatch.dataset.color;
+  });
+});
+
+// Custom color picker
+customColorInput.addEventListener('change', () => {
+  colorSwatches.forEach(s => s.classList.remove('selected'));
+  selectedColor = customColorInput.value;
 });
 
 addTitleBtn.addEventListener('click', () => {
@@ -118,9 +133,6 @@ form.addEventListener('submit', (e) => {
   const fontChoice = document.getElementById('fontChoice').value;
   const fontStyle = document.getElementById('fontStyle').value;
 
-  let textColor = textColorSelect.value;
-  if(textColor==='custom') textColor = customColorInput.value;
-
   const titleBlocks = titlesContainer.querySelectorAll('.titleBlock');
 
   titleBlocks.forEach((block,index)=>{
@@ -132,12 +144,11 @@ form.addEventListener('submit', (e) => {
 
     const previewDiv = document.createElement('div');
     previewDiv.className = 'preview';
-    previewDiv.style.color = textColor;
+    previewDiv.style.color = selectedColor;
     previewDiv.style.fontFamily = fontChoice;
     previewDiv.style.fontStyle = fontStyle==='italic' ? 'italic':'normal';
     previewDiv.style.fontWeight = fontStyle==='bold' ? 'bold':'normal';
 
-    // Opera and Composer lines
     let secondLine = '';
     if(operaSource) secondLine += `<div style="font-size:42px; font-weight:normal;">${operaSource}</div>`;
     if(composer) secondLine += `<div style="font-size:42px; font-weight:normal;">${composer}</div>`;
@@ -151,7 +162,6 @@ form.addEventListener('submit', (e) => {
     `;
     previewsContainer.appendChild(previewDiv);
 
-    // Download button
     const downloadBtn = previewDiv.querySelector('button');
     downloadBtn.addEventListener('click', ()=>{
       html2canvas(previewDiv, { scale: 5 }).then(canvas => {
