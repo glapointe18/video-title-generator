@@ -183,19 +183,21 @@ form.addEventListener('submit', async (e) => {
     previews.push(previewDiv);
   });
 
-  if(previews.length > 0) downloadAllBtn.style.display = 'block';
+  if(previews.length > 0) {
+    downloadAllBtn.style.display = 'block';
+  }
 
   downloadAllBtn.onclick = async () => {
+    if(previews.length === 0) return;
     const zip = new JSZip();
-    for(let i=0; i<previews.length; i++){
-      const canvas = await html2canvas(previews[i], { scale:5 });
+    for(let i = 0; i < previews.length; i++){
+      const canvas = await html2canvas(previews[i], { scale: 5 });
       const dataUrl = canvas.toDataURL('image/png');
       const imgData = dataUrl.split(',')[1];
-      zip.file(`page-titre-${i+1}.png`, imgData, {base64:true});
+      zip.file(`page-titre-${i+1}.png`, imgData, { base64: true });
     }
-    zip.generateAsync({type:"blob"}).then(content => {
-      saveAs(content, "pages-titres.zip");
-    });
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "pages-titres.zip");
   };
 });
 </script>
