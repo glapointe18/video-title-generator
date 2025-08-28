@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Créateur de Pages Titre Multiples</title>
+<title>Créateur de Pages Titre Illimitées</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative&family=Gilda+Display&family=Lobster&family=Montserrat&family=Playfair+Display&family=Roboto+Slab&display=swap" rel="stylesheet">
 
@@ -19,11 +19,10 @@
     background-color: black; position: relative; margin-bottom: 20px; padding: 10px;
     color: white;
   }
-  .download-btn { padding: 10px 15px; cursor: pointer; max-width: 200px; margin-top: 10px; }
   #colorPalette { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
   .colorSwatch { width:40px; height:40px; cursor:pointer; border:2px solid #333; border-radius:5px; }
   .colorSwatch.selected { border:3px solid #fff; }
-  #customColor { width:40px; height:40px; border:none; cursor:pointer; }
+  #customColorBtn { padding:5px 10px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -46,7 +45,8 @@
 
   <label>Text color :</label>
   <div id="colorPalette">
-    <input type="color" id="customColor" value="#ffffff">
+    <button type="button" id="customColorBtn">Custom Color</button>
+    <input type="color" id="customColor" style="display:none;">
   </div>
 
   <label>Choix de police :</label>
@@ -60,13 +60,6 @@
     <option value="'Playfair Display', serif">Playfair Display</option>
   </select>
 
-  <label>Style du texte :</label>
-  <select id="fontStyle">
-    <option value="normal">Normal</option>
-    <option value="italic">Italique</option>
-    <option value="bold">Gras</option>
-  </select>
-
   <h2>Titres / Opéra / Compositeur (illimité)</h2>
   <div id="titlesContainer">
     <div class="titleBlock">
@@ -76,34 +69,30 @@
     </div>
   </div>
   <button type="button" id="addTitleBtn">Ajouter un autre titre</button>
-  <button type="submit">Générer les pages</button>
+  <button type="button" id="generateBtn">Générer les pages</button>
+  <button type="button" id="sendEmailBtn">Envoyer par Email</button>
 </form>
 
 <div id="previewsContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-const form = document.getElementById('titleForm');
-const previewsContainer = document.getElementById('previewsContainer');
-const addTitleBtn = document.getElementById('addTitleBtn');
-const titlesContainer = document.getElementById('titlesContainer');
-const colorPaletteDiv = document.getElementById('colorPalette');
-const customColorInput = document.getElementById('customColor');
-
 const paletteColors = ['#fff2cc', '#ffb1b7', '#7c67ff', '#ffffff', '#ff7456'];
 let selectedColor = '#ffffff';
+const colorPaletteDiv = document.getElementById('colorPalette');
+const customColorInput = document.getElementById('customColor');
+const customColorBtn = document.getElementById('customColorBtn');
 
-// Generate swatches
-paletteColors.forEach((color, index) => {
+// Generate color swatches
+paletteColors.forEach(color => {
   const swatch = document.createElement('div');
   swatch.className = 'colorSwatch';
   swatch.style.background = color;
   swatch.dataset.color = color;
-  if(color === '#ffffff') swatch.classList.add('selected'); // default white
-  colorPaletteDiv.insertBefore(swatch, customColorInput);
+  if(color === '#ffffff') swatch.classList.add('selected');
+  colorPaletteDiv.insertBefore(swatch, customColorBtn);
 });
 
-// Handle swatch click
 const colorSwatches = document.querySelectorAll('.colorSwatch');
 colorSwatches.forEach(swatch => {
   swatch.addEventListener('click', () => {
@@ -114,12 +103,14 @@ colorSwatches.forEach(swatch => {
 });
 
 // Custom color
+customColorBtn.addEventListener('click', () => customColorInput.click());
 customColorInput.addEventListener('change', () => {
   colorSwatches.forEach(s => s.classList.remove('selected'));
   selectedColor = customColorInput.value;
 });
 
-addTitleBtn.addEventListener('click', () => {
+// Add new title block
+document.getElementById('addTitleBtn').addEventListener('click', () => {
   const newBlock = document.createElement('div');
   newBlock.className = 'titleBlock';
   newBlock.innerHTML = `
@@ -127,35 +118,30 @@ addTitleBtn.addEventListener('click', () => {
     <label>Opera / Source :</label><input type="text" class="operaSource" placeholder="Ex: La Traviata">
     <label>Compositeur :</label><input type="text" class="composer" placeholder="Ex: Beethoven">
   `;
-  titlesContainer.appendChild(newBlock);
+  document.getElementById('titlesContainer').appendChild(newBlock);
 });
 
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  previewsContainer.innerHTML = ''; // Clear previous previews
-
+// Generate previews
+document.getElementById('generateBtn').addEventListener('click', () => {
+  const previewsContainer = document.getElementById('previewsContainer');
+  previewsContainer.innerHTML = '';
   const interpreter = document.getElementById('interpreter').value;
   const instrumentTessiture = document.getElementById('instrumentTessiture').value;
   const accompanist = document.getElementById('accompanist').value;
   const instrumentAccomp = document.getElementById('instrumentAccomp').value;
   const fontChoice = document.getElementById('fontChoice').value;
-  const fontStyle = document.getElementById('fontStyle').value;
 
-  const titleBlocks = titlesContainer.querySelectorAll('.titleBlock');
-
-  titleBlocks.forEach((block,index)=>{
+  const titleBlocks = document.querySelectorAll('.titleBlock');
+  titleBlocks.forEach((block, idx) => {
     const videoTitle = block.querySelector('.videoTitle').value;
     const operaSource = block.querySelector('.operaSource').value;
     const composer = block.querySelector('.composer').value;
-
     if(!videoTitle) return;
 
     const previewDiv = document.createElement('div');
     previewDiv.className = 'preview';
     previewDiv.style.color = selectedColor;
     previewDiv.style.fontFamily = fontChoice;
-    previewDiv.style.fontStyle = fontStyle==='italic' ? 'italic':'normal';
-    previewDiv.style.fontWeight = fontStyle==='bold' ? 'bold':'normal';
 
     let secondLine = '';
     if(operaSource) secondLine += `<div style="font-size:42px; font-weight:normal;">${operaSource}</div>`;
@@ -166,20 +152,41 @@ form.addEventListener('submit', (e) => {
       ${secondLine}<br><br>
       <div style="font-size:31px;">${[interpreter, instrumentTessiture].filter(Boolean).join(', ')}</div>
       <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
-      <button class="download-btn">Télécharger cette page</button>
     `;
     previewsContainer.appendChild(previewDiv);
-
-    const downloadBtn = previewDiv.querySelector('button');
-    downloadBtn.addEventListener('click', ()=>{
-      html2canvas(previewDiv, { scale: 5 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `page-titre-${index+1}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
   });
+});
+
+// Send email
+document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+  const previews = document.querySelectorAll('.preview');
+  if(previews.length === 0) return alert("Générez d'abord les pages.");
+
+  const images = [];
+  for(const preview of previews){
+    const canvas = await html2canvas(preview, { scale: 5 });
+    images.push(canvas.toDataURL('image/png'));
+  }
+
+  const formHTML = document.getElementById('titleForm').outerHTML;
+
+  try {
+    const res = await fetch('http://localhost:3000/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images, formHTML })
+    });
+
+    const data = await res.json();
+    if(data.success){
+      alert("Email envoyé avec succès !");
+    } else {
+      alert("Erreur lors de l'envoi : " + data.error);
+    }
+  } catch(err) {
+    console.error(err);
+    alert("Erreur de connexion au serveur");
+  }
 });
 </script>
 </body>
