@@ -66,10 +66,6 @@ form.addEventListener('submit', (e) => {
 
     if(!videoTitle) return;
 
-    // Container for preview + button
-    const wrapperDiv = document.createElement('div');
-    wrapperDiv.style.marginBottom = '30px';
-
     // Preview box
     const previewDiv = document.createElement('div');
     previewDiv.className = 'preview';
@@ -89,11 +85,10 @@ form.addEventListener('submit', (e) => {
       <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
     `;
 
-    // Download button OUTSIDE the preview
+    // Download button OUTSIDE preview
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = 'Télécharger cette page';
     downloadBtn.className = 'download-btn';
-    downloadBtn.style.marginTop = '10px';
 
     downloadBtn.addEventListener('click', ()=>{
       html2canvas(previewDiv, { scale: 5 }).then(canvas => {
@@ -104,8 +99,12 @@ form.addEventListener('submit', (e) => {
       });
     });
 
+    // Wrapper for spacing
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.style.marginBottom = '30px';
     wrapperDiv.appendChild(previewDiv);
     wrapperDiv.appendChild(downloadBtn);
+
     previewsContainer.appendChild(wrapperDiv);
   });
 });
