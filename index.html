@@ -16,7 +16,7 @@
   .preview {
     width: 800px; height: 450px; border: 2px solid #333; 
     display: flex; flex-direction: column; justify-content: center; 
-    align-items: center; font-size: 28px; text-align: center; 
+    align-items: center; text-align: center; 
     background-color: #eee; position: relative; margin-bottom: 10px; padding: 10px;
   }
   .logo { position: absolute; top: 20px; left: 20px; max-width: 100px; }
@@ -27,6 +27,15 @@
 
 <h1>Créer une Page Titre</h1>
 <form id="titleForm">
+  <label>Titre :</label>
+  <input type="text" id="videoTitle" required placeholder="Ex: Sonate n°5">
+
+  <label>Choix de taille du titre :</label>
+  <input type="number" id="titleSize" value="48" min="10" max="150">
+
+  <label>Compositeur :</label>
+  <input type="text" id="composer" placeholder="Ex: Beethoven">
+
   <label>Interprète :</label>
   <input type="text" id="interpreter" required placeholder="Ex: John Doe">
 
@@ -38,12 +47,6 @@
 
   <label>Instrument Accompagnateur :</label>
   <input type="text" id="instrumentAccomp" placeholder="Ex: Piano">
-
-  <label>Titre :</label>
-  <input type="text" id="videoTitle" required placeholder="Ex: Sonate n°5">
-
-  <label>Compositeur :</label>
-  <input type="text" id="composer" placeholder="Ex: Beethoven">
 
   <label>Couleur de fond :</label>
   <input type="color" id="bgColor" value="#eeeeee">
@@ -90,12 +93,13 @@ const downloadBtn = document.getElementById('downloadBtn');
 form.addEventListener('submit', (e) => {
   e.preventDefault();
 
+  const videoTitle = document.getElementById('videoTitle').value;
+  const titleSize = document.getElementById('titleSize').value;
+  const composer = document.getElementById('composer').value;
   const interpreter = document.getElementById('interpreter').value;
   const instrumentTessiture = document.getElementById('instrumentTessiture').value;
   const accompanist = document.getElementById('accompanist').value;
   const instrumentAccomp = document.getElementById('instrumentAccomp').value;
-  const videoTitle = document.getElementById('videoTitle').value;
-  const composer = document.getElementById('composer').value;
   const bgColor = document.getElementById('bgColor').value;
   const logoUrl = document.getElementById('logoUrl').value;
   const fontChoice = document.getElementById('fontChoice').value;
@@ -106,14 +110,16 @@ form.addEventListener('submit', (e) => {
   textDiv.style.fontStyle = fontStyle === 'italic' ? 'italic' : 'normal';
   textDiv.style.fontWeight = fontStyle === 'bold' ? 'bold' : 'normal';
 
-  const firstLine = [interpreter, instrumentTessiture].filter(Boolean).join(', ');
-  const secondLine = [accompanist, instrumentAccomp].filter(Boolean).join(', ');
+  const firstLine = videoTitle;
+  const secondLine = composer ? composer : '';
+  const thirdLine = [interpreter, instrumentTessiture].filter(Boolean).join(', ');
+  const fourthLine = [accompanist, instrumentAccomp].filter(Boolean).join(', ');
 
   textDiv.innerHTML = `
-    <strong>${firstLine}</strong><br>
-    ${secondLine}<br>
-    <strong>${videoTitle}</strong><br>
-    ${composer ? composer : ''}
+    <div style="font-size: ${titleSize}px;"><strong>${firstLine}</strong></div>
+    ${secondLine}<br><br>
+    ${thirdLine}<br>
+    ${fourthLine}
   `;
 
   if (logoUrl) {
