@@ -80,14 +80,11 @@
 </form>
 
 <!-- Bouton pour télécharger toutes les images -->
-<button id="downloadAllBtn" class="download-all-btn" style="display:none;">Télécharger toutes les pages en ZIP</button>
+<button id="downloadAllBtn" class="download-all-btn" style="display:none;">Télécharger toutes les pages</button>
 
 <div id="previewsContainer"></div>
 
-<!-- Librairies -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.11.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
 <script>
 const form = document.getElementById('titleForm');
@@ -111,7 +108,6 @@ paletteColors.forEach(color => {
   colorPaletteDiv.insertBefore(swatch, customColorInput);
 });
 
-// Gestion du clic sur les swatches
 const colorSwatches = document.querySelectorAll('.colorSwatch');
 colorSwatches.forEach(swatch => {
   swatch.addEventListener('click', () => {
@@ -121,13 +117,11 @@ colorSwatches.forEach(swatch => {
   });
 });
 
-// Couleur personnalisée
 customColorInput.addEventListener('change', () => {
   colorSwatches.forEach(s => s.classList.remove('selected'));
   selectedColor = customColorInput.value;
 });
 
-// Ajouter un nouveau titre
 addTitleBtn.addEventListener('click', () => {
   const newBlock = document.createElement('div');
   newBlock.className = 'titleBlock';
@@ -139,13 +133,14 @@ addTitleBtn.addEventListener('click', () => {
   titlesContainer.appendChild(newBlock);
 });
 
-// Générer les previews
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   previewsContainer.innerHTML = '';
   downloadAllBtn.style.display = 'none';
 
-  const interpreter = document.getElementById('interpreter').value;
+  const interpreter = document.getElementById('interpreter').value.trim();
+  if(!interpreter) return;
+
   const instrumentTessiture = document.getElementById('instrumentTessiture').value;
   const accompanist = document.getElementById('accompanist').value;
   const instrumentAccomp = document.getElementById('instrumentAccomp').value;
@@ -156,9 +151,9 @@ form.addEventListener('submit', async (e) => {
   const previews = [];
 
   titleBlocks.forEach((block) => {
-    const videoTitle = block.querySelector('.videoTitle').value;
-    const operaSource = block.querySelector('.operaSource').value;
-    const composer = block.querySelector('.composer').value;
+    const videoTitle = block.querySelector('.videoTitle').value.trim();
+    const operaSource = block.querySelector('.operaSource').value.trim();
+    const composer = block.querySelector('.composer').value.trim();
     if(!videoTitle) return;
 
     const previewDiv = document.createElement('div');
@@ -183,21 +178,23 @@ form.addEventListener('submit', async (e) => {
     previews.push(previewDiv);
   });
 
-  if(previews.length > 0) {
-    downloadAllBtn.style.display = 'block';
-  }
+  if(previews.length > 0) downloadAllBtn.style.display = 'block';
 
   downloadAllBtn.onclick = async () => {
-    if(previews.length === 0) return;
-    const zip = new JSZip();
     for(let i = 0; i < previews.length; i++){
-      const canvas = await html2canvas(previews[i], { scale: 5 });
+      const previewDiv = previews[i];
+      const titleDiv = previewDiv.querySelector('div').textContent.trim(); 
+      const fileName = `${interpreter} - ${titleDiv}.png`.replace(/[\\\/:*?"<>|]/g,'');
+      const canvas = await html2canvas(previewDiv, { scale: 5 });
       const dataUrl = canvas.toDataURL('image/png');
-      const imgData = dataUrl.split(',')[1];
-      zip.file(`page-titre-${i+1}.png`, imgData, { base64: true });
+
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-    const content = await zip.generateAsync({ type: "blob" });
-    saveAs(content, "pages-titres.zip");
   };
 });
 </script>
