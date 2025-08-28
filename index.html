@@ -105,11 +105,18 @@ form.addEventListener('submit', (e) => {
   textDiv.style.fontStyle = fontStyle === 'italic' ? 'italic' : 'normal';
   textDiv.style.fontWeight = fontStyle === 'bold' ? 'bold' : 'normal';
 
-  // Determine second line: Opera / Source or Composer
-  const secondLineContent = operaSource || composer;
-
+  // Build lines
   const firstLine = `<div style="font-size:42px; font-weight:bold;">${videoTitle}</div>`;
-  const secondLine = `<div style="font-size:42px; font-weight:normal;">${secondLineContent}</div>`;
+
+  // Opera and Composer lines
+  let secondLine = '';
+  if(operaSource) {
+    secondLine += `<div style="font-size:42px; font-weight:normal;">${operaSource}</div>`;
+  }
+  if(composer) {
+    secondLine += `<div style="font-size:42px; font-weight:normal;">${composer}</div>`;
+  }
+
   const thirdLine = [interpreter, instrumentTessiture].filter(Boolean).join(', ');
   const fourthLine = [accompanist, instrumentAccomp].filter(Boolean).join(', ');
 
