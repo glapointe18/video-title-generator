@@ -19,7 +19,7 @@
     background-color: black; position: relative; margin-bottom: 10px; padding: 10px;
     color: white;
   }
-  .download-btn { padding: 10px 15px; cursor: pointer; max-width: 200px; margin-bottom: 20px; }
+  .download-all-btn { padding: 10px 15px; cursor: pointer; max-width: 300px; margin-bottom: 20px; }
   #colorPalette { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
   .colorSwatch { width:40px; height:40px; cursor:pointer; border:2px solid #333; border-radius:5px; }
   .colorSwatch.selected { border:3px solid #fff; }
@@ -79,9 +79,16 @@
   <button type="submit">Générer les pages</button>
 </form>
 
+<!-- Bouton pour télécharger toutes les images -->
+<button id="downloadAllBtn" class="download-all-btn" style="display:none;">Télécharger toutes les pages en ZIP</button>
+
 <div id="previewsContainer"></div>
 
+<!-- Librairies -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.11.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
 <script>
 const form = document.getElementById('titleForm');
 const previewsContainer = document.getElementById('previewsContainer');
@@ -89,21 +96,22 @@ const addTitleBtn = document.getElementById('addTitleBtn');
 const titlesContainer = document.getElementById('titlesContainer');
 const colorPaletteDiv = document.getElementById('colorPalette');
 const customColorInput = document.getElementById('customColor');
+const downloadAllBtn = document.getElementById('downloadAllBtn');
 
 const paletteColors = ['#fff2cc', '#ffb1b7', '#7c67ff', '#ffffff', '#ff7456'];
 let selectedColor = '#ffffff';
 
-// Generate swatches
-paletteColors.forEach((color) => {
+// Générer les swatches
+paletteColors.forEach(color => {
   const swatch = document.createElement('div');
   swatch.className = 'colorSwatch';
   swatch.style.background = color;
   swatch.dataset.color = color;
-  if(color === '#ffffff') swatch.classList.add('selected'); // default white
+  if(color === '#ffffff') swatch.classList.add('selected');
   colorPaletteDiv.insertBefore(swatch, customColorInput);
 });
 
-// Handle swatch click
+// Gestion du clic sur les swatches
 const colorSwatches = document.querySelectorAll('.colorSwatch');
 colorSwatches.forEach(swatch => {
   swatch.addEventListener('click', () => {
@@ -113,12 +121,13 @@ colorSwatches.forEach(swatch => {
   });
 });
 
-// Custom color
+// Couleur personnalisée
 customColorInput.addEventListener('change', () => {
   colorSwatches.forEach(s => s.classList.remove('selected'));
   selectedColor = customColorInput.value;
 });
 
+// Ajouter un nouveau titre
 addTitleBtn.addEventListener('click', () => {
   const newBlock = document.createElement('div');
   newBlock.className = 'titleBlock';
@@ -130,9 +139,11 @@ addTitleBtn.addEventListener('click', () => {
   titlesContainer.appendChild(newBlock);
 });
 
-form.addEventListener('submit', (e) => {
+// Générer les previews
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  previewsContainer.innerHTML = ''; // Clear previous previews
+  previewsContainer.innerHTML = '';
+  downloadAllBtn.style.display = 'none';
 
   const interpreter = document.getElementById('interpreter').value;
   const instrumentTessiture = document.getElementById('instrumentTessiture').value;
@@ -142,12 +153,12 @@ form.addEventListener('submit', (e) => {
   const fontStyle = document.getElementById('fontStyle').value;
 
   const titleBlocks = titlesContainer.querySelectorAll('.titleBlock');
+  const previews = [];
 
-  titleBlocks.forEach((block,index)=>{
+  titleBlocks.forEach((block) => {
     const videoTitle = block.querySelector('.videoTitle').value;
     const operaSource = block.querySelector('.operaSource').value;
     const composer = block.querySelector('.composer').value;
-
     if(!videoTitle) return;
 
     const previewDiv = document.createElement('div');
@@ -168,23 +179,24 @@ form.addEventListener('submit', (e) => {
       <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
     `;
 
-    // Ajouter le preview et le bouton séparément
     previewsContainer.appendChild(previewDiv);
-
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'download-btn';
-    downloadBtn.textContent = 'Télécharger cette page';
-    previewsContainer.appendChild(downloadBtn);
-
-    downloadBtn.addEventListener('click', ()=>{
-      html2canvas(previewDiv, { scale: 5 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `page-titre-${index+1}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
+    previews.push(previewDiv);
   });
+
+  if(previews.length > 0) downloadAllBtn.style.display = 'block';
+
+  downloadAllBtn.onclick = async () => {
+    const zip = new JSZip();
+    for(let i=0; i<previews.length; i++){
+      const canvas = await html2canvas(previews[i], { scale:5 });
+      const dataUrl = canvas.toDataURL('image/png');
+      const imgData = dataUrl.split(',')[1];
+      zip.file(`page-titre-${i+1}.png`, imgData, {base64:true});
+    }
+    zip.generateAsync({type:"blob"}).then(content => {
+      saveAs(content, "pages-titres.zip");
+    });
+  };
 });
 </script>
 </body>
