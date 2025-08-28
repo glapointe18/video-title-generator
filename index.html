@@ -3,191 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Créateur de Pages Titre Illimitées</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative&family=Gilda+Display&family=Lobster&family=Montserrat&family=Playfair+Display&family=Roboto+Slab&display=swap" rel="stylesheet">
-
+<title>Générateur de Pages Titres</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative&family=Gilda+Display&family=Montserrat&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-  h1 { margin-bottom: 20px; }
-  form { margin-bottom: 20px; max-width: 600px; }
-  input, select, button { display: block; margin-bottom: 10px; padding: 8px; width: 100%; }
-  .preview {
-    width: 800px; height: 450px; border: 2px solid #333; 
-    display: flex; flex-direction: column; justify-content: center; 
-    align-items: center; text-align: center; 
-    background-color: black; position: relative; margin-bottom: 20px; padding: 10px;
-    color: white;
-  }
-  #colorPalette { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
-  .colorSwatch { width:40px; height:40px; cursor:pointer; border:2px solid #333; border-radius:5px; }
-  .colorSwatch.selected { border:3px solid #fff; }
-  #customColorBtn { padding:5px 10px; cursor:pointer; }
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #121212;
+        color: white;
+        padding: 20px;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        background: #1c1c1c;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    h1 { text-align: center; margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+    }
+    .piece-container {
+        background: #2a2a2a;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+    }
+    #preview {
+        background: black;
+        margin-top: 20px;
+        padding: 50px;
+        text-align: center;
+        color: white;
+        width: 3840px;
+        height: 2160px;
+        display: none;
+    }
+    .color-option {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-block;
+        cursor: pointer;
+        margin: 5px;
+        border: 2px solid white;
+    }
 </style>
 </head>
 <body>
 
-<h1>Créer des Pages Titre Illimitées</h1>
-<form id="titleForm">
+<div class="container">
+    <h1>Générateur de Pages Titres</h1>
+    <form id="titleForm">
+        <label for="font">Police :</label>
+        <select id="font">
+            <option value="'Gilda Display', serif">Gilda Display</option>
+            <option value="'Cinzel Decorative', cursive">Cinzel Decorative</option>
+            <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+        </select>
 
-  <h2>Informations des artistes (inchangées)</h2>
-  <label>Interprète :</label>
-  <input type="text" id="interpreter" required placeholder="Ex: John Doe">
+        <label>Couleur du texte :</label>
+        <div>
+            <span class="color-option" style="background:#fff2cc;" data-color="#fff2cc"></span>
+            <span class="color-option" style="background:#ffb1b7;" data-color="#ffb1b7"></span>
+            <span class="color-option" style="background:#7c67ff;" data-color="#7c67ff"></span>
+            <span class="color-option" style="background:#ffffff;" data-color="#ffffff"></span>
+            <span class="color-option" style="background:#ff7456;" data-color="#ff7456"></span>
+            <input type="color" id="customColor" style="margin-left:10px;">
+        </div>
 
-  <label>Instrument / Tessiture :</label>
-  <input type="text" id="instrumentTessiture" placeholder="Ex: Piano, Soprano">
+        <label for="interprete">Interprète :</label>
+        <input type="text" id="interprete" required>
 
-  <label>Accompagnateur :</label>
-  <input type="text" id="accompanist" placeholder="Ex: Jane Smith">
+        <label for="accompagnement">Accompagnement :</label>
+        <input type="text" id="accompagnement" placeholder="Ex: Piano, Orchestre">
 
-  <label>Instrument Accompagnateur :</label>
-  <input type="text" id="instrumentAccomp" placeholder="Ex: Piano">
+        <h3>Pièces (Titre / Opéra / Compositeur)</h3>
+        <div id="pieces"></div>
+        <button type="button" onclick="addPiece()">Ajouter une pièce</button><br><br>
 
-  <label>Text color :</label>
-  <div id="colorPalette">
-    <button type="button" id="customColorBtn">Custom Color</button>
-    <input type="color" id="customColor" style="display:none;">
-  </div>
+        <button type="button" onclick="generatePages()">Générer les pages</button>
+        <button type="button" onclick="sendEmail()">Envoyer par Email</button>
+        <button type="button" onclick="downloadZIP()">Télécharger en ZIP</button>
+    </form>
+</div>
 
-  <label>Choix de police :</label>
-  <select id="fontChoice">
-    <option value="'Gilda Display', serif">Gilda Display</option>
-    <option value="'Cinzel Decorative', cursive">Cinzel Decorative</option>
-    <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
-    <option value="'Montserrat', sans-serif">Montserrat</option>
-    <option value="'Lobster', cursive">Lobster</option>
-    <option value="'Roboto Slab', serif">Roboto Slab</option>
-    <option value="'Playfair Display', serif">Playfair Display</option>
-  </select>
+<div id="preview"></div>
 
-  <h2>Titres / Opéra / Compositeur (illimité)</h2>
-  <div id="titlesContainer">
-    <div class="titleBlock">
-      <label>Titre :</label><input type="text" class="videoTitle" placeholder="Ex: Sonate n°5">
-      <label>Opera / Source :</label><input type="text" class="operaSource" placeholder="Ex: La Traviata">
-      <label>Compositeur :</label><input type="text" class="composer" placeholder="Ex: Beethoven">
-    </div>
-  </div>
-  <button type="button" id="addTitleBtn">Ajouter un autre titre</button>
-  <button type="button" id="generateBtn">Générer les pages</button>
-  <button type="button" id="sendEmailBtn">Envoyer par Email</button>
-</form>
+<script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-<div id="previewsContainer"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-const paletteColors = ['#fff2cc', '#ffb1b7', '#7c67ff', '#ffffff', '#ff7456'];
-let selectedColor = '#ffffff';
-const colorPaletteDiv = document.getElementById('colorPalette');
-const customColorInput = document.getElementById('customColor');
-const customColorBtn = document.getElementById('customColorBtn');
+(function(){
+    emailjs.init("TJWO-d6xGHgV93CjR"); // Your EmailJS public key
+})();
 
-// Generate color swatches
-paletteColors.forEach(color => {
-  const swatch = document.createElement('div');
-  swatch.className = 'colorSwatch';
-  swatch.style.background = color;
-  swatch.dataset.color = color;
-  if(color === '#ffffff') swatch.classList.add('selected');
-  colorPaletteDiv.insertBefore(swatch, customColorBtn);
+let selectedColor = "#ffffff";
+let generatedImages = [];
+
+document.querySelectorAll('.color-option').forEach(option => {
+    option.addEventListener('click', function() {
+        selectedColor = this.dataset.color;
+    });
 });
 
-const colorSwatches = document.querySelectorAll('.colorSwatch');
-colorSwatches.forEach(swatch => {
-  swatch.addEventListener('click', () => {
-    colorSwatches.forEach(s => s.classList.remove('selected'));
-    swatch.classList.add('selected');
-    selectedColor = swatch.dataset.color;
-  });
+document.getElementById('customColor').addEventListener('change', function() {
+    selectedColor = this.value;
 });
 
-// Custom color
-customColorBtn.addEventListener('click', () => customColorInput.click());
-customColorInput.addEventListener('change', () => {
-  colorSwatches.forEach(s => s.classList.remove('selected'));
-  selectedColor = customColorInput.value;
-});
-
-// Add new title block
-document.getElementById('addTitleBtn').addEventListener('click', () => {
-  const newBlock = document.createElement('div');
-  newBlock.className = 'titleBlock';
-  newBlock.innerHTML = `
-    <label>Titre :</label><input type="text" class="videoTitle" placeholder="Ex: Sonate n°5">
-    <label>Opera / Source :</label><input type="text" class="operaSource" placeholder="Ex: La Traviata">
-    <label>Compositeur :</label><input type="text" class="composer" placeholder="Ex: Beethoven">
-  `;
-  document.getElementById('titlesContainer').appendChild(newBlock);
-});
-
-// Generate previews
-document.getElementById('generateBtn').addEventListener('click', () => {
-  const previewsContainer = document.getElementById('previewsContainer');
-  previewsContainer.innerHTML = '';
-  const interpreter = document.getElementById('interpreter').value;
-  const instrumentTessiture = document.getElementById('instrumentTessiture').value;
-  const accompanist = document.getElementById('accompanist').value;
-  const instrumentAccomp = document.getElementById('instrumentAccomp').value;
-  const fontChoice = document.getElementById('fontChoice').value;
-
-  const titleBlocks = document.querySelectorAll('.titleBlock');
-  titleBlocks.forEach((block, idx) => {
-    const videoTitle = block.querySelector('.videoTitle').value;
-    const operaSource = block.querySelector('.operaSource').value;
-    const composer = block.querySelector('.composer').value;
-    if(!videoTitle) return;
-
-    const previewDiv = document.createElement('div');
-    previewDiv.className = 'preview';
-    previewDiv.style.color = selectedColor;
-    previewDiv.style.fontFamily = fontChoice;
-
-    let secondLine = '';
-    if(operaSource) secondLine += `<div style="font-size:42px; font-weight:normal;">${operaSource}</div>`;
-    if(composer) secondLine += `<div style="font-size:42px; font-weight:normal;">${composer}</div>`;
-
-    previewDiv.innerHTML = `
-      <div style="font-size:42px; font-weight:bold; font-style:italic;">${videoTitle}</div>
-      ${secondLine}<br><br>
-      <div style="font-size:31px;">${[interpreter, instrumentTessiture].filter(Boolean).join(', ')}</div>
-      <div style="font-size:31px;">${[accompanist, instrumentAccomp].filter(Boolean).join(', ')}</div>
+function addPiece() {
+    const container = document.createElement('div');
+    container.classList.add('piece-container');
+    container.innerHTML = `
+        <label>Titre :</label><input type="text" class="title" required>
+        <label>Opéra (optionnel) :</label><input type="text" class="opera">
+        <label>Compositeur :</label><input type="text" class="composer" required>
     `;
-    previewsContainer.appendChild(previewDiv);
-  });
-});
+    document.getElementById('pieces').appendChild(container);
+}
 
-// Send email
-document.getElementById('sendEmailBtn').addEventListener('click', async () => {
-  const previews = document.querySelectorAll('.preview');
-  if(previews.length === 0) return alert("Générez d'abord les pages.");
+function generatePages() {
+    generatedImages = [];
+    const font = document.getElementById('font').value;
+    const interprete = document.getElementById('interprete').value;
+    const accompagnement = document.getElementById('accompagnement').value;
+    const pieces = document.querySelectorAll('.piece-container');
+    const preview = document.getElementById('preview');
 
-  const images = [];
-  for(const preview of previews){
-    const canvas = await html2canvas(preview, { scale: 5 });
-    images.push(canvas.toDataURL('image/png'));
-  }
+    pieces.forEach((piece, index) => {
+        const title = piece.querySelector('.title').value;
+        const opera = piece.querySelector('.opera').value;
+        const composer = piece.querySelector('.composer').value;
 
-  const formHTML = document.getElementById('titleForm').outerHTML;
+        let html = `
+            <div style="font-family:${font};color:${selectedColor};width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                <div style="font-size:42px;font-weight:bold;font-style:italic;">${title}</div>
+                ${opera ? `<div style="font-size:42px;margin-top:10px;">${opera}</div>` : ""}
+                <div style="font-size:42px;margin-top:10px;">${composer}</div>
+                <div style="height:60px;"></div>
+                <div style="font-size:31px;">${interprete}</div>
+                <div style="font-size:31px;">${accompagnement}</div>
+            </div>
+        `;
+        preview.innerHTML = html;
+        preview.style.display = 'block';
 
-  try {
-    const res = await fetch('http://localhost:3000/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images, formHTML })
+        const canvas = document.createElement('canvas');
+        canvas.width = 3840;
+        canvas.height = 2160;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const data = new XMLSerializer().serializeToString(preview);
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160"><foreignObject width="100%" height="100%">${data}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+            generatedImages.push({ name: `page_${index+1}.png`, data: canvas.toDataURL("image/png") });
+        };
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+}
+
+async function downloadZIP() {
+    if (generatedImages.length === 0) {
+        alert("Veuillez générer les pages avant de télécharger.");
+        return;
+    }
+
+    const zip = new JSZip();
+    generatedImages.forEach(img => {
+        const base64Data = img.data.split(',')[1];
+        zip.file(img.name, base64Data, { base64: true });
     });
 
-    const data = await res.json();
-    if(data.success){
-      alert("Email envoyé avec succès !");
-    } else {
-      alert("Erreur lors de l'envoi : " + data.error);
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "pages_titres.zip");
+}
+
+async function sendEmail() {
+    if (generatedImages.length === 0) {
+        alert("Veuillez générer les pages avant d'envoyer.");
+        return;
     }
-  } catch(err) {
-    console.error(err);
-    alert("Erreur de connexion au serveur");
-  }
-});
+
+    try {
+        await emailjs.send("service_bfuvp9i", "template_f8oe7vt", {
+            to_email: "glapointe@prodgetl.com",
+            form_html: document.getElementById('titleForm').outerHTML,
+            images: JSON.stringify(generatedImages.map(img => img.name))
+        });
+        alert("Email envoyé avec succès (sans images, utilisez ZIP pour fichiers) !");
+    } catch (error) {
+        console.error("Erreur lors de l'envoi :", error);
+        alert("Échec de l'envoi.");
+    }
+}
 </script>
+
 </body>
 </html>
